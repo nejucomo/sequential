@@ -1,7 +1,9 @@
+mod genfn;
 mod into;
 
 use either::Either::{self, *};
 
+pub use self::genfn::GeneratorFn;
 pub use self::into::IntoGenerator;
 
 pub trait Generator: Sized {
