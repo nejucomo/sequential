@@ -1,4 +1,8 @@
+mod into;
+
 use either::Either::{self, *};
+
+pub use self::into::IntoGenerator;
 
 pub trait Generator: Sized {
     type Output;

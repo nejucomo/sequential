@@ -1,5 +1,9 @@
+mod into;
+
 use crate::Generator;
 use either::Either;
+
+pub use self::into::IntoSequential;
 
 pub trait Sequential<I>: Sized {
     type Output;
