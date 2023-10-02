@@ -1,13 +1,12 @@
 [package]
 name = "sequential"
-version = "0.1.0"
-edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+version.workspace = true
+edition.workspace = true
+license.workspace = true
 
 [dependencies]
-derive_more = "0.99.17"
-either = "1.9.0"
+derive_more.workspace = true
+either.workspace = true
 
 [dev-dependencies]
-test-case = "3.2.1"
+test-case.workspace = true
