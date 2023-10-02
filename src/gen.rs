@@ -1,10 +1,12 @@
 mod genfn;
 mod into;
+mod intoiter;
 
 use either::Either::{self, *};
 
 pub use self::genfn::GeneratorFn;
 pub use self::into::IntoGenerator;
+pub use self::intoiter::{into_iter, IntoIter};
 
 pub trait Generator: Sized {
     type Output;
