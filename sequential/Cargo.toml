@@ -1,5 +1,6 @@
 [package]
 name = "sequential"
+description = "A trait for sequential processes over inputs, outputs, and explicit termination."
 version.workspace = true
 edition.workspace = true
 license.workspace = true
