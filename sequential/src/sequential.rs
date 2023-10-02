@@ -4,7 +4,9 @@ use either::Either;
 ///
 /// Implementors only need to provide [Sequential::into_next_with].
 pub trait Sequential<I>: Sized {
+    /// Each non-terminal step of a sequence produces this value
     type Output;
+    /// This value is produced when a sequence terminates
     type Terminal;
 
     /// Consume the [Sequential] and an `input` to produce either a continuation (type `Self`) with an `Output` or else a `Termination` value

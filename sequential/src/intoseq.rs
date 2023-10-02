@@ -4,9 +4,12 @@ use crate::Sequential;
 ///
 /// A blanked implementation ensures all [Sequential] types provide [IntoSequential], analogous to [Iterator] and [IntoIterator].
 pub trait IntoSequential<I> {
+    /// The output of [IntoSequential::Seq]
     type Output;
+    /// The terminal of [IntoSequential::Seq]
     type Terminal;
-    type Seq: Sequential<I>;
+    /// The [Sequential] value `self` converts into
+    type Seq: Sequential<I, Output = Self::Output, Terminal = Self::Terminal>;
 
     /// Convert `self` into a [Sequential] type
     fn into_sequential(self) -> Self::Seq;
