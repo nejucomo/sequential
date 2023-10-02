@@ -1,5 +1,5 @@
-pub mod gen;
-pub mod seq;
+mod intoseq;
+mod sequential;
 
-pub use self::gen::{Generator, GeneratorFn};
-pub use self::seq::{IntoSequential, Sequential};
+pub use self::intoseq::IntoSequential;
+pub use self::sequential::Sequential;
