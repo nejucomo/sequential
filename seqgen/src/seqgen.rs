@@ -1,4 +1,5 @@
 use either::Either;
+use sequential::Sequential;
 
 /// A [SeqGen] produces a sequence of `Output` values or a `Terminal`
 ///
@@ -13,4 +14,16 @@ pub trait SeqGen: Sized {
     ///
     /// This uses move semantics (consuming the [SeqGen] and potentially producing a new one) to ensure in the case of termination, no inconsistent sequencing state remains.
     fn into_next(self) -> Either<(Self, Self::Output), Self::Terminal>;
+}
+
+impl<T> SeqGen for T
+where
+    T: Sequential<()>,
+{
+    type Output = <T as Sequential<()>>::Output;
+    type Terminal = <T as Sequential<()>>::Terminal;
+
+    fn into_next(self) -> Either<(Self, Self::Output), Self::Terminal> {
+        self.into_next_with(())
+    }
 }

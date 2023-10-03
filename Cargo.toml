@@ -11,6 +11,7 @@ edition = "2021"
 license = "MIT"
 
 [workspace.dependencies]
+sequential = { path = "./sequential" }
 derive_more = "0.99.17"
 either = "1.9.0"
 test-case = "3.2.1"
