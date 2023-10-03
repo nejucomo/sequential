@@ -1,6 +1,6 @@
 use either::Either;
 
-/// A [Sequential] process that processes inputs of type `I`, and produces a sequence of `Output` values or a `Terminal`
+/// A [Sequential] type processes inputs of type `I`, and produces a sequence of `Output` values or a `Terminal`
 ///
 /// Implementors only need to provide [Sequential::into_next_with].
 pub trait Sequential<I>: Sized {

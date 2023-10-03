@@ -1,9 +1,11 @@
 use either::Either;
 use sequential::Sequential;
 
-/// A [SeqGen] produces a sequence of `Output` values or a `Terminal`
+/// A [SeqGen] type produces a sequence of `Output` values or a `Terminal`
 ///
 /// Implementors only need to provide [SeqGen::into_next].
+///
+/// The [SeqGen] trait encapsulates a subset of the [Sequential] trait, and any `Sequential<()>` is also a [SeqGen] via a blanket impl.
 pub trait SeqGen: Sized {
     /// Each non-terminal step of a sequence produces this value
     type Output;
