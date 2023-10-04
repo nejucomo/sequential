@@ -1,18 +1,12 @@
-[workspace]
-resolver = "2"
-members = [
-  "seqgen",
-  "sequential",
-  "sequential-async",
-]
-
-[workspace.package]
+[package]
+name = "sequential"
+description = "A trait for sequential processes over inputs, outputs, and explicit termination."
 version = "0.1.0"
 edition = "2021"
 license = "MIT"
 
-[workspace.dependencies]
-sequential = { path = "./sequential" }
-derive_more = "0.99.17"
+[dependencies]
 either = "1.9.0"
+
+[dev-dependencies]
 test-case = "3.2.1"
