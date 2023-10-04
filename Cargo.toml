@@ -3,6 +3,7 @@ resolver = "2"
 members = [
   "seqgen",
   "sequential",
+  "sequential-async",
 ]
 
 [workspace.package]
