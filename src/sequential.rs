@@ -1,8 +1,10 @@
 //! The [Sequential] trait and supporting types for abstract sequential processing over inputs, outputs, and explicit termination
 
 mod intosequential;
+mod pipe;
 
 pub use self::intosequential::IntoSequential;
+pub use self::pipe::Pipe;
 
 use either::Either;
 
@@ -19,4 +21,12 @@ pub trait Sequential<I>: Sized {
     ///
     /// This uses move semantics (consuming the [Sequential] and potentially producing a new one) to ensure in the case of termination, no inconsistent sequencing state remains.
     fn into_next_with(self, input: I) -> Either<(Self, Self::Output), Self::Terminal>;
+
+    /// Pipe `self` outputs into `downstream` inputs to produce a [Sequential] [Pipe] composition
+    fn pipe_into<D>(self, downstream: D) -> Pipe<Self, D>
+    where
+        D: Sequential<Self::Output>,
+    {
+        Pipe::from_parts(self, downstream)
+    }
 }
