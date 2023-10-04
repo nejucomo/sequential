@@ -1,3 +1,9 @@
+//! The [Sequential] trait and supporting types for abstract sequential processing over inputs, outputs, and explicit termination
+
+mod intosequential;
+
+pub use self::intosequential::IntoSequential;
+
 use either::Either;
 
 /// A [Sequential] type processes inputs of type `I`, and produces a sequence of `Output` values or a `Terminal`
