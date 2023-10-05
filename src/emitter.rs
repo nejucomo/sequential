@@ -30,3 +30,17 @@ pub trait Emitter: Sized {
         AndThen::new(self, downstream)
     }
 }
+
+impl<I> Emitter for I
+where
+    I: Iterator,
+{
+    type Output = <I as Iterator>::Item;
+    type Terminal = ();
+
+    fn into_next(mut self) -> Either<(Self, Self::Output), Self::Terminal> {
+        use Either::*;
+
+        self.next().map(|x| Left((self, x))).unwrap_or(Right(()))
+    }
+}
