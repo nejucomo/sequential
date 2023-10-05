@@ -1,10 +1,12 @@
 //! The [Sequential] trait and supporting types for abstract sequential processing over inputs, outputs, and explicit termination
 
 mod andthen;
+mod fnmut;
 mod intosequential;
 mod pipe;
 
 pub use self::andthen::AndThen;
+pub use self::fnmut::{from_fn_mut, SequentialFnMut};
 pub use self::intosequential::IntoSequential;
 pub use self::pipe::{Pipe, PipeTerminal};
 
