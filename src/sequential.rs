@@ -4,7 +4,7 @@ mod intosequential;
 mod pipe;
 
 pub use self::intosequential::IntoSequential;
-pub use self::pipe::Pipe;
+pub use self::pipe::{Pipe, PipeTerminal};
 
 use either::Either;
 
