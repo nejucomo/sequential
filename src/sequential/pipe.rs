@@ -1,11 +1,13 @@
 use crate::Sequential;
 use either::Either::{self, *};
 
-/// A composition of upstream (type `U`) and downstream (type `D`) [Sequential] types
+/// Process each input through an upstream (type `U`) into the downstream (type `D`) to produce a final output
 ///
-/// The [Sequential] impl of [Pipe] processes inputs through the upstream, passing the output to the downstream. When either member terminates, that termination value as well as the remaining state of the other member are returned in the [PipeTerminal].
+/// When either member terminates, that termination value as well as the remaining state of the other member are returned in the [PipeTerminal].
+///
+/// The intermediate items (the value emitted by `U` and consumed by `D`) must be convertable back into the input type via [From] since [Sequential] requires handing back "unprocessed input". In the case that `U` has partially processed an input when `D` terminates, we convert back the partially processed item.
 #[derive(Copy, Clone, Debug)]
-pub struct Pipe<U, D>(U, D);
+pub struct Pipe<U, D>(pub(super) U, pub(super) D);
 
 /// The [Sequential::Terminal] of a [Pipe] with full state
 ///
@@ -22,29 +24,25 @@ where
     U: Sequential<I>,
     D: Sequential<<U as Sequential<I>>::Output>;
 
-impl<U, D> Pipe<U, D> {
-    /// Construct a [Pipe] from `upstream` and `downstream` [Sequential] values
-    pub fn from_parts(upstream: U, downstream: D) -> Self {
-        Pipe(upstream, downstream)
-    }
-}
-
 impl<I, U, D> Sequential<I> for Pipe<U, D>
 where
+    I: From<<U as Sequential<I>>::Output>,
     U: Sequential<I>,
     D: Sequential<<U as Sequential<I>>::Output>,
 {
     type Output = <D as Sequential<<U as Sequential<I>>::Output>>::Output;
     type Terminal = PipeTerminal<I, U, D>;
 
-    fn into_next_with(self, input: I) -> Either<(Self, Self::Output), Self::Terminal> {
+    fn into_next_with(self, input: I) -> Either<(Self, Self::Output), (Self::Terminal, I)> {
         let Pipe(up, down) = self;
         match up.into_next_with(input) {
             Left((next_up, item)) => match down.into_next_with(item) {
                 Left((next_down, output)) => Left((Pipe(next_up, next_down), output)),
-                Right(down_term) => Right(PipeTerminal(Right((next_up, down_term)))),
+                Right((down_term, item)) => {
+                    Right((PipeTerminal(Right((next_up, down_term))), I::from(item)))
+                }
             },
-            Right(up_term) => Right(PipeTerminal(Left((up_term, down)))),
+            Right((up_term, input)) => Right((PipeTerminal(Left((up_term, down))), input)),
         }
     }
 }
