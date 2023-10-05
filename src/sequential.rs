@@ -54,3 +54,6 @@ where
         self.into_next().map_right(|t| (t, ()))
     }
 }
+
+#[cfg(test)]
+mod tests;
