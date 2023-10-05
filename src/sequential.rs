@@ -8,6 +8,7 @@ pub use self::andthen::AndThen;
 pub use self::intosequential::IntoSequential;
 pub use self::pipe::{Pipe, PipeTerminal};
 
+use crate::Emitter;
 use either::Either;
 
 /// A [Sequential] type processes inputs of type `I`, and produces a sequence of `Output` values or a `Terminal`
@@ -39,5 +40,17 @@ pub trait Sequential<I>: Sized {
         D: Sequential<Self::Output>,
     {
         Pipe(self, downstream)
+    }
+}
+
+impl<E> Sequential<()> for E
+where
+    E: Emitter,
+{
+    type Output = <E as Emitter>::Output;
+    type Terminal = <E as Emitter>::Terminal;
+
+    fn into_next_with(self, _: ()) -> Either<(Self, Self::Output), (Self::Terminal, ())> {
+        self.into_next().map_right(|t| (t, ()))
     }
 }
