@@ -1,4 +1,5 @@
-use crate::Sequential;
+use crate::{sequential, Sequential};
+use either::Either::{self, *};
 use test_case::test_case;
 
 #[test_case(0..3 => () ; "iter-to-emitter-to-sequential-via-blankets")]
@@ -13,4 +14,31 @@ where
     let (term, ()) = s3.into_next_with(()).right().unwrap();
     assert_eq!([0, 1, 2], [n0, n1, n2]);
     term
+}
+
+#[test]
+fn from_fn_mut() {
+    let mut acc = 0;
+
+    let f = |inc: u32| -> Either<u32, (String, u32)> {
+        acc += inc;
+        if acc <= 10 {
+            Left(acc)
+        } else {
+            Right((format!("overflow: {acc} > 10"), inc))
+        }
+    };
+
+    let s0 = sequential::from_fn_mut(f);
+    let (s1, n) = s0.into_next_with(1).left().unwrap();
+    assert_eq!(1, n);
+    let (s2, n) = s1.into_next_with(2).left().unwrap();
+    assert_eq!(3, n);
+    let (s3, n) = s2.into_next_with(3).left().unwrap();
+    assert_eq!(6, n);
+    let (s4, n) = s3.into_next_with(4).left().unwrap();
+    assert_eq!(10, n);
+    let (errmsg, n_out) = s4.into_next_with(5).right().unwrap();
+    assert_eq!(5, n_out);
+    assert_eq!("overflow: 15 > 10", &errmsg);
 }
