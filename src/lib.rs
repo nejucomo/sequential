@@ -7,3 +7,6 @@ mod sequential;
 pub use self::andthen::AndThen;
 pub use self::intosequential::IntoSequential;
 pub use self::sequential::Sequential;
+
+#[cfg(test)]
+mod tests;
