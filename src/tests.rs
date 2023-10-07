@@ -14,3 +14,33 @@ where
     assert_eq!([0, 1, 2], [n0, n1, n2]);
     term
 }
+
+#[test]
+fn from_fn_mut() {
+    use either::Either::{self, *};
+
+    let mut acc = 0;
+    let mut inc = 0;
+
+    let f = || -> Either<u32, String> {
+        inc += 1;
+        acc += inc;
+        if acc <= 10 {
+            Left(acc)
+        } else {
+            Right(format!("overflow: {acc} > 10"))
+        }
+    };
+
+    let s0 = crate::from_fn_mut(f);
+    let (s1, n) = s0.into_next().left().unwrap();
+    assert_eq!(1, n);
+    let (s2, n) = s1.into_next().left().unwrap();
+    assert_eq!(3, n);
+    let (s3, n) = s2.into_next().left().unwrap();
+    assert_eq!(6, n);
+    let (s4, n) = s3.into_next().left().unwrap();
+    assert_eq!(10, n);
+    let errmsg = s4.into_next().right().unwrap();
+    assert_eq!("overflow: 15 > 10", &errmsg);
+}
