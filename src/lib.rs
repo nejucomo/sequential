@@ -1,7 +1,14 @@
 #![deny(unsafe_code, unused, missing_docs)]
-//! A family of related traits exemplified by [Sequential]
-pub mod emitter;
-pub mod sequential;
+//! A [Sequential] trait for generating a sequence of values with an explicit termination value
+mod andthen;
+mod fnmut;
+mod intosequential;
+mod sequential;
 
-pub use self::emitter::{Emitter, IntoEmitter};
-pub use self::sequential::{IntoSequential, Sequential};
+pub use self::andthen::AndThen;
+pub use self::fnmut::{from_fn_mut, SequentialFnMut};
+pub use self::intosequential::IntoSequential;
+pub use self::sequential::Sequential;
+
+#[cfg(test)]
+mod tests;
