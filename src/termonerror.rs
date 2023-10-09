@@ -2,6 +2,37 @@ use crate::Sequential;
 use either::Either::{self, *};
 
 /// Convert a [Sequential] that generates [Result] outputs to one which terminates on the first [Err] output, or else with [Ok] on successful completion
+///
+/// Note that because there is a blanket impl of [Sequential] for all [Iterator] types, this helps convert the common pattern in [std] where certain [Iterator] types have `Item = Result<T, E>` with the convention that any [Err] item should prevent further iteration. This function translates a _convention_ to a type-safe API, ensuring consumers never iterate after error.
+///
+/// # Example
+///
+/// ```
+/// use std::io::{BufRead, BufReader, Read};
+/// use sequential::Sequential;
+/// use either::Either::{Left, Right};
+///
+/// fn count_lines_and_chars<R>(r: R) -> std::io::Result<(usize, usize)>
+/// where
+///     R: Read,
+/// {
+///     let mut lines = 0;
+///     let mut chars = 0;
+///     let mut seq = sequential::terminate_on_error(BufReader::new(r).lines());
+///     loop {
+///         match seq.into_next() {
+///             Left((next, line)) => {
+///                 lines += 1;
+///                 chars += line.chars().count();
+///                 seq = next;
+///             }
+///             Right(res) => {
+///                 return res.map(|()| (lines, chars));
+///             }
+///         }
+///     }
+/// }
+/// ```
 pub fn terminate_on_error<T, E>(
     errorseq: impl Sequential<Output = Result<T, E>, Terminal = ()>,
 ) -> impl Sequential<Output = T, Terminal = Result<(), E>> {
