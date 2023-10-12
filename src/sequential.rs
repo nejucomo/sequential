@@ -3,7 +3,7 @@
 use crate::AndThen;
 use either::Either;
 
-/// An [Sequential] produces a sequence of `Output` values or a `Terminal`
+/// A [Sequential] produces a sequence of `Output` values or a `Terminal`
 ///
 /// Implementors only need to provide [Sequential::into_next].
 pub trait Sequential: Sized {
@@ -23,6 +23,27 @@ pub trait Sequential: Sized {
         D: Sequential<Output = Self::Output>,
     {
         AndThen::new(self, downstream)
+    }
+
+    /// Call `f` on each item, then return [Self::Terminal]
+    fn for_each<F>(self, mut f: F) -> Self::Terminal
+    where
+        F: FnMut(Self::Output),
+    {
+        use either::Either::*;
+
+        let mut seq = self;
+        loop {
+            match seq.into_next() {
+                Left((next, item)) => {
+                    f(item);
+                    seq = next;
+                }
+                Right(term) => {
+                    return term;
+                }
+            }
+        }
     }
 }
 
