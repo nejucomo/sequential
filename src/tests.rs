@@ -15,6 +15,18 @@ where
     term
 }
 
+#[test_case(0..3 => () ; "iter-to-sequential-via-blanket")]
+#[test_case((0..1).and_then(1..3) => ((), ()) ; "iter-to-sequential-via-blanket-and-then")]
+fn sequential_for_each<S, T>(seq: S) -> T
+where
+    S: Sequential<Output = u32, Terminal = T>,
+{
+    let mut acc = 0;
+    let term = seq.for_each(|n| acc += n);
+    assert_eq!(acc, 3);
+    term
+}
+
 #[test]
 fn from_fn_mut() {
     use either::Either::{self, *};
