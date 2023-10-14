@@ -30,9 +30,11 @@ where
     type Terminal = U;
 
     fn into_next(self) -> Either<(Self, Self::Output), Self::Terminal> {
+        use crate::TransformNext;
+
         let MapTerminal { seq, f } = self;
         seq.into_next()
-            .map_right(|term| f(term))
-            .map_left(|(next, item)| (MapTerminal::new(next, f), item))
+            .map_terminal(&f)
+            .map_state(|next| MapTerminal::new(next, f))
     }
 }

@@ -86,6 +86,7 @@ mod mapoutput;
 mod mapterminal;
 mod sequential;
 mod termonerror;
+mod transformnext;
 
 pub use self::andthen::AndThen;
 pub use self::fnmut::{from_fn_mut, SequentialFnMut};
@@ -94,6 +95,7 @@ pub use self::mapoutput::MapOutput;
 pub use self::mapterminal::MapTerminal;
 pub use self::sequential::Sequential;
 pub use self::termonerror::{terminate_on_error, TerminateOnError};
+pub use self::transformnext::TransformNext;
 
 #[cfg(test)]
 mod tests;
