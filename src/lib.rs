@@ -82,12 +82,16 @@
 mod andthen;
 mod fnmut;
 mod intosequential;
+mod mapoutput;
+mod mapterminal;
 mod sequential;
 mod termonerror;
 
 pub use self::andthen::AndThen;
 pub use self::fnmut::{from_fn_mut, SequentialFnMut};
 pub use self::intosequential::IntoSequential;
+pub use self::mapoutput::MapOutput;
+pub use self::mapterminal::MapTerminal;
 pub use self::sequential::Sequential;
 pub use self::termonerror::{terminate_on_error, TerminateOnError};
 
