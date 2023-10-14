@@ -1,6 +1,6 @@
 //! The [Sequential] trait and supporting types for abstract sequential emission of outputs with explicit termination
 
-use crate::AndThen;
+use crate::{AndThen, MapOutput, MapTerminal};
 use either::Either;
 
 /// A [Sequential] produces a sequence of `Output` values or a `Terminal`
@@ -89,6 +89,22 @@ pub trait Sequential: Sized {
     /// Drop all items to return [Self::Terminal]
     fn terminate(self) -> Self::Terminal {
         self.for_each(std::mem::drop)
+    }
+
+    /// Map each [Self::Output] another type
+    fn map_output<F, P>(self, f: F) -> MapOutput<Self, F, P>
+    where
+        F: Fn(Self::Output) -> P,
+    {
+        MapOutput::new(self, f)
+    }
+
+    /// Map the [Self::Terminal] another type
+    fn map_terminal<F, P>(self, f: F) -> MapTerminal<Self, F, P>
+    where
+        F: Fn(Self::Terminal) -> P,
+    {
+        MapTerminal::new(self, f)
     }
 }
 
