@@ -34,8 +34,8 @@ use either::Either::{self, *};
 /// }
 /// ```
 pub fn terminate_on_error<T, E>(
-    errorseq: impl Sequential<Output = Result<T, E>, Terminal = ()>,
-) -> impl Sequential<Output = T, Terminal = Result<(), E>> {
+    errorseq: impl Sequential<Item = Result<T, E>, Terminal = ()>,
+) -> impl Sequential<Item = T, Terminal = Result<(), E>> {
     TerminateOnError(errorseq)
 }
 
@@ -43,16 +43,16 @@ pub fn terminate_on_error<T, E>(
 #[derive(Copy, Clone, Debug)]
 pub struct TerminateOnError<S, T, E>(S)
 where
-    S: Sequential<Output = Result<T, E>, Terminal = ()>;
+    S: Sequential<Item = Result<T, E>, Terminal = ()>;
 
 impl<S, T, E> Sequential for TerminateOnError<S, T, E>
 where
-    S: Sequential<Output = Result<T, E>, Terminal = ()>,
+    S: Sequential<Item = Result<T, E>, Terminal = ()>,
 {
-    type Output = T;
+    type Item = T;
     type Terminal = Result<(), E>;
 
-    fn into_next(self) -> Either<(Self, Self::Output), Self::Terminal> {
+    fn into_next(self) -> Either<(Self, Self::Item), Self::Terminal> {
         match self.0.into_next() {
             Left((next, Ok(item))) => Left((TerminateOnError(next), item)),
             Left((_, Err(e))) => Right(Err(e)),

@@ -26,13 +26,13 @@ where
 
 impl<U, D, O> Sequential for AndThen<U, D>
 where
-    U: Sequential<Output = O>,
-    D: Sequential<Output = O>,
+    U: Sequential<Item = O>,
+    D: Sequential<Item = O>,
 {
-    type Output = O;
+    type Item = O;
     type Terminal = (<U as Sequential>::Terminal, <D as Sequential>::Terminal);
 
-    fn into_next(self) -> Either<(Self, Self::Output), Self::Terminal> {
+    fn into_next(self) -> Either<(Self, Self::Item), Self::Terminal> {
         let AndThen { upstate, down } = self;
         match upstate {
             Left(up) => match up.into_next() {

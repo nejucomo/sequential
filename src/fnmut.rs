@@ -16,7 +16,7 @@ impl<F, O, T> Sequential for SequentialFnMut<F>
 where
     F: FnMut() -> Either<O, T>,
 {
-    type Output = O;
+    type Item = O;
     type Terminal = T;
 
     fn into_next(mut self) -> Either<(Self, O), T> {

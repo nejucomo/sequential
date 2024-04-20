@@ -26,10 +26,10 @@ where
     S: Sequential,
     F: Fn(S::Terminal) -> U,
 {
-    type Output = S::Output;
+    type Item = S::Item;
     type Terminal = U;
 
-    fn into_next(self) -> Either<(Self, Self::Output), Self::Terminal> {
+    fn into_next(self) -> Either<(Self, Self::Item), Self::Terminal> {
         use crate::TransformNext;
 
         let MapTerminal { seq, f } = self;

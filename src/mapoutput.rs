@@ -1,40 +1,40 @@
 use crate::Sequential;
 use either::Either;
 
-/// A [Sequential] transformer that maps each [Sequential::Output] of its inner value.
-pub struct MapOutput<S, F, P>
+/// A [Sequential] transformer that maps each [Sequential::Item] of its inner value.
+pub struct MapItem<S, F, P>
 where
     S: Sequential,
-    F: Fn(S::Output) -> P,
+    F: Fn(S::Item) -> P,
 {
     seq: S,
     f: F,
 }
 
-impl<S, F, P> MapOutput<S, F, P>
+impl<S, F, P> MapItem<S, F, P>
 where
     S: Sequential,
-    F: Fn(S::Output) -> P,
+    F: Fn(S::Item) -> P,
 {
     pub(crate) fn new(seq: S, f: F) -> Self {
-        MapOutput { seq, f }
+        MapItem { seq, f }
     }
 }
 
-impl<S, F, P> Sequential for MapOutput<S, F, P>
+impl<S, F, P> Sequential for MapItem<S, F, P>
 where
     S: Sequential,
-    F: Fn(S::Output) -> P,
+    F: Fn(S::Item) -> P,
 {
-    type Output = P;
+    type Item = P;
     type Terminal = S::Terminal;
 
-    fn into_next(self) -> Either<(Self, Self::Output), Self::Terminal> {
+    fn into_next(self) -> Either<(Self, Self::Item), Self::Terminal> {
         use crate::TransformNext;
 
-        let MapOutput { seq, f } = self;
+        let MapItem { seq, f } = self;
         seq.into_next()
             .map_output(&f)
-            .map_state(|next| MapOutput::new(next, f))
+            .map_state(|next| MapItem::new(next, f))
     }
 }
