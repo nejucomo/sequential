@@ -1,7 +1,7 @@
 use crate::Sequential;
 use either::Either;
 
-/// A [Sequential] transformer that maps each [Sequential::Item] of its inner value.
+/// Map each [Item](Sequential::Item) of a [Sequential]
 pub struct MapItem<S, F, P>
 where
     S: Sequential,

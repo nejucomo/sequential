@@ -3,18 +3,18 @@
 use crate::{AndThen, MapItem, MapTerminal};
 use either::Either;
 
-/// A [Sequential] produces a sequence of `Item` values or a `Terminal`
+/// A [Sequential] produces a sequence of [Item](Sequential::Item) values or a [Terminal](Sequential::Terminal)
 ///
 /// Implementors only need to provide [Sequential::into_next].
 pub trait Sequential: Sized {
-    /// Each non-terminal step of a sequence produces this value
+    /// Each non-terminal step of a sequence produces an `Item`
     type Item;
-    /// This value is produced when a sequence terminates
+    /// A `Terminal` is produced when a sequence terminates
     type Terminal;
 
-    /// Consume the [Sequential] to produce either a continuation (type `Self`) with an `Item` or else a `Termination` value.
+    /// Consume the [Sequential] to produce either a continuation (type `Self`) with an [Item](Sequential::Item) or else a [Terminal](Sequential::Terminal)
     ///
-    /// This uses move semantics (consuming the [Sequential] and potentially producing a new one) to ensure in the case of termination, no inconsistent emitter state remains.
+    /// This uses move semantics (consuming the [Sequential] and potentially producing a new one) to ensure in the case of termination, no inconsistent state remains. This also ensures consuming code cannot "iterate past the end" of a sequence.
     fn into_next(self) -> Either<(Self, Self::Item), Self::Terminal>;
 
     /// After completing `self`, continue with `downstream`, collecting the two terminals into a pair
