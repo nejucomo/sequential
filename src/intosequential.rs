@@ -1,10 +1,10 @@
 use crate::Sequential;
 
-/// Types which can be converted into a [Sequential] process with specific output and termination types
+/// Types which can be converted into a [Sequential] process with specific item and termination types
 ///
 /// A blanked implementation ensures all [Sequential] types provide [IntoSequential], analogous to [Iterator] and [IntoIterator].
 pub trait IntoSequential {
-    /// The output of [IntoSequential::Into]
+    /// The item of [IntoSequential::Into]
     type Item;
     /// The terminal of [IntoSequential::Into]
     type Terminal;

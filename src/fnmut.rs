@@ -1,10 +1,10 @@
 use crate::Sequential;
 use either::Either;
 
-/// Wraps a [FnMut] which returns [Sequential] outputs or a terminal
+/// Wraps a [FnMut] which returns [Sequential] items or a terminal
 pub struct SequentialFnMut<F>(F);
 
-/// Wrap a [FnMut] which returns [Sequential] outputs or a terminal
+/// Wrap a [FnMut] which returns [Sequential] items or a terminal
 pub fn from_fn_mut<F, O, T>(f: F) -> SequentialFnMut<F>
 where
     F: FnMut() -> Either<O, T>,
@@ -20,6 +20,6 @@ where
     type Terminal = T;
 
     fn into_next(mut self) -> Either<(Self, O), T> {
-        self.0().map_left(|output| (self, output))
+        self.0().map_left(|item| (self, item))
     }
 }

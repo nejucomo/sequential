@@ -34,7 +34,7 @@ where
 
         let MapItem { seq, f } = self;
         seq.into_next()
-            .map_output(&f)
+            .map_item(&f)
             .map_state(|next| MapItem::new(next, f))
     }
 }

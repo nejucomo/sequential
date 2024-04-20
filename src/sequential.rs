@@ -1,4 +1,4 @@
-//! The [Sequential] trait and supporting types for abstract sequential emission of outputs with explicit termination
+//! The [Sequential] trait and supporting types for abstract sequential emission of items with explicit termination
 
 use crate::{AndThen, MapItem, MapTerminal};
 use either::Either;
@@ -92,7 +92,7 @@ pub trait Sequential: Sized {
     }
 
     /// Map each [Self::Item] another type
-    fn map_output<F, P>(self, f: F) -> MapItem<Self, F, P>
+    fn map_item<F, P>(self, f: F) -> MapItem<Self, F, P>
     where
         F: Fn(Self::Item) -> P,
     {

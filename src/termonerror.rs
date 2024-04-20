@@ -1,7 +1,7 @@
 use crate::Sequential;
 use either::Either::{self, *};
 
-/// Convert a [Sequential] that generates [Result] outputs to one which terminates on the first [Err] output, or else with [Ok] on successful completion
+/// Convert a [Sequential] that generates [Result] items to one which terminates on the first [Err] item, or else with [Ok] on successful completion
 ///
 /// Note that because there is a blanket impl of [Sequential] for all [Iterator] types, this helps convert the common pattern in [std] where certain [Iterator] types have `Item = Result<T, E>` with the convention that any [Err] item should prevent further iteration. This function translates a _convention_ to a type-safe API, ensuring consumers never iterate after error.
 ///
