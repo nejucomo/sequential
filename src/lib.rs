@@ -1,4 +1,5 @@
-#![deny(unsafe_code, unused, missing_docs)]
+#![deny(unused, missing_docs)]
+#![forbid(unsafe_code)]
 //! A [Sequential] trait for generating a sequence of values with an explicit termination value
 //!
 //! The fundamental method is [Sequential::into_next]:
