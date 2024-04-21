@@ -23,11 +23,11 @@
 //! {
 //!     let mut lines = 0;
 //!     let mut chars = 0;
-//!     let seq = BufReader::new(r).lines().terminate_on_residual();
+//!     let seq = BufReader::new(r).lines().terminate_on_err();
 //!     seq.for_each(|line| {
 //!         lines += 1;
 //!         chars += line.chars().count();
-//!     })?;
+//!     })?; // Notice the '?' propagation.
 //!
 //!     Ok((lines, chars))
 //! }
@@ -87,7 +87,7 @@ mod intosequential;
 mod mapitems;
 mod mapterminal;
 mod sequential;
-mod termonresi;
+mod termonerr;
 mod transformnext;
 
 pub use self::andthen::AndThen;
@@ -96,7 +96,7 @@ pub use self::intosequential::IntoSequential;
 pub use self::mapitems::MapItems;
 pub use self::mapterminal::MapTerminal;
 pub use self::sequential::Sequential;
-pub use self::termonresi::TerminateOnResidual;
+pub use self::termonerr::TerminateOnErr;
 pub use self::transformnext::TransformNext;
 
 #[cfg(test)]

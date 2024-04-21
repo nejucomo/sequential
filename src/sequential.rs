@@ -2,7 +2,7 @@
 
 use std::ops::Try;
 
-use crate::{AndThen, MapItems, MapTerminal, TerminateOnResidual};
+use crate::{AndThen, MapItems, MapTerminal, TerminateOnErr};
 use either::Either;
 
 /// A [Sequential] produces a sequence of [Item](Sequential::Item) values or a [Terminal](Sequential::Terminal)
@@ -109,15 +109,31 @@ pub trait Sequential: Sized {
         MapTerminal::new(self, f)
     }
 
-    /// Transform to a [Sequential] which terminates on the first [Try::Residual] (such as [Err]); if no inner item is a residual, terminate with the original [Self::Terminal] as [Try::Output]
+    /// Transform from a [Sequential] with [Result] items to one which terminates on the first [Err] encountered, if any, otherwise it terminates with the original [Terminal](Self::Terminal)
     ///
-    /// # Example
+    /// More concisely, transfrom from:
     ///
-    fn terminate_on_residual<T, E>(self) -> TerminateOnResidual<Self, T, E>
+    /// `Sequential<Item = Result<X, E>, Terminal = T>` into `Sequential<Item = X, Terminal = Result<T, E>>`
+    ///
+    /// # Note on `Self::Item`
+    ///
+    /// If [type equality constraints](https://github.com/rust-lang/rust/issues/20041) were available a clearer definition of this method would be:
+    ///
+    /// ```ignore
+    /// fn terminate_on_err<X, E>(self) -> TerminateOnErr<Self, X, E>
+    /// where
+    ///     Self::Item = Result<X, E>,
+    /// {
+    ///     ...
+    /// }
+    /// ```
+    ///
+    /// As a work-around we have the given bound on [Try] with [Result] residuals. This works as intended for `Result<X, E>`, yet it also works for other [Try impls](https://doc.rust-lang.org/std/ops/trait.Try.html#implementors).
+    fn terminate_on_err<X, E>(self) -> TerminateOnErr<Self, X, E>
     where
-        Self::Item: Try<Residual = Result<T, E>>,
+        Self::Item: Try<Residual = Result<X, E>>,
     {
-        TerminateOnResidual::from(self)
+        TerminateOnErr::from(self)
     }
 }
 

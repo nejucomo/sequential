@@ -6,21 +6,21 @@ use crate::{Sequential, TransformNext};
 
 /// A [Sequential] which terminates with the first item residual encountered
 #[derive(Copy, Clone, Debug)]
-pub struct TerminateOnResidual<S, T, E> {
+pub struct TerminateOnErr<S, T, E> {
     seq: S,
     phantom: PhantomData<(T, E)>,
 }
 
-impl<S, T, E> From<S> for TerminateOnResidual<S, T, E> {
+impl<S, T, E> From<S> for TerminateOnErr<S, T, E> {
     fn from(seq: S) -> Self {
-        TerminateOnResidual {
+        TerminateOnErr {
             seq,
             phantom: PhantomData,
         }
     }
 }
 
-impl<S, T, E> Sequential for TerminateOnResidual<S, T, E>
+impl<S, T, E> Sequential for TerminateOnErr<S, T, E>
 where
     S: Sequential,
     S::Item: Try<Residual = Result<T, E>>,
@@ -31,7 +31,7 @@ where
     fn into_next(self) -> Either<(Self, Self::Item), Self::Terminal> {
         self.seq
             .into_next()
-            .map_state(TerminateOnResidual::from)
+            .map_state(TerminateOnErr::from)
             .map_terminal(Ok)
             .and_then(|itemtry| {
                 use std::ops::ControlFlow::*;
