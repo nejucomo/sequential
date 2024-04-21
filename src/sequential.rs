@@ -113,12 +113,9 @@ pub trait Sequential: Sized {
     ///
     /// # Example
     ///
-    fn terminate_on_residual<T>(
-        self,
-    ) -> TerminateOnResidual<Self, T, <Self::Item as Try>::Output, <Self::Item as Try>::Residual>
+    fn terminate_on_residual<T, E>(self) -> TerminateOnResidual<Self, T, E>
     where
-        Self::Item: Try,
-        T: Try<Output = Self::Terminal, Residual = <Self::Item as Try>::Residual>,
+        Self::Item: Try<Residual = Result<T, E>>,
     {
         TerminateOnResidual::from(self)
     }
