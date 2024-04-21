@@ -1,6 +1,6 @@
 [package]
 name = "sequential"
-description = "A trait for sequential processes over inputs, outputs, and explicit termination."
+description = "A trait for producing sequences of items with an explicit termination value."
 version = "0.1.0"
 edition = "2021"
 license = "MIT"

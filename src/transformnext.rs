@@ -6,7 +6,7 @@ use either::Either;
 ///
 /// # Example
 ///
-/// Rather than use [Either] methods directly, this crate provides [Sequential](crate::Sequential)-specific convenience methods for transforming results. Consider if we were implementing a [Sequential](crate::Sequential) wrapper which multiplies each [Sequential::Output](crate::Sequential::Output) by 2 and the terminal by 3. Without [TransformNext] this might look like this:
+/// Rather than use [Either] methods directly, this crate provides [Sequential](crate::Sequential)-specific convenience methods for transforming results. Consider if we were implementing a [Sequential](crate::Sequential) wrapper which multiplies each [Sequential::Item](crate::Sequential::Item) by 2 and the terminal by 3. Without [TransformNext] this might look like this:
 ///
 /// ```
 /// use sequential::Sequential;
@@ -16,14 +16,14 @@ use either::Either;
 ///
 /// impl<S> Sequential for Wrapper<S>
 /// where S:
-///     Sequential<Output = i64, Terminal = i64>,
+///     Sequential<Item = i64, Terminal = i64>,
 /// {
-///     type Output = S::Output;
+///     type Item = S::Item;
 ///     type Terminal = S::Terminal;
 ///
-///     fn into_next(self) -> Either<(Self, Self::Output), Self::Terminal> {
+///     fn into_next(self) -> Either<(Self, Self::Item), Self::Terminal> {
 ///         self.0.into_next()
-///             .map_left(|(next, output)| (Wrapper(next), output * 2))
+///             .map_left(|(next, item)| (Wrapper(next), item * 2))
 ///             .map_right(|term| term * 3)
 ///     }
 /// }
@@ -39,15 +39,15 @@ use either::Either;
 ///
 /// impl<S> Sequential for Wrapper<S>
 /// where S:
-///     Sequential<Output = i64, Terminal = i64>,
+///     Sequential<Item = i64, Terminal = i64>,
 /// {
-///     type Output = S::Output;
+///     type Item = S::Item;
 ///     type Terminal = S::Terminal;
 ///
-///     fn into_next(self) -> Either<(Self, Self::Output), Self::Terminal> {
+///     fn into_next(self) -> Either<(Self, Self::Item), Self::Terminal> {
 ///         self.0.into_next()
 ///             .map_state(Wrapper)
-///             .map_output(|x| x*2)
+///             .map_item(|x| x*2)
 ///             .map_terminal(|x| x*3)
 ///     }
 /// }
@@ -58,8 +58,8 @@ pub trait TransformNext<S, O, T> {
     where
         F: FnOnce(S) -> S2;
 
-    /// Map the [Sequential::Output](crate::Sequential::Output) of a [Sequential::into_next](crate::Sequential::into_next) type
-    fn map_output<F, O2>(self, f: F) -> Either<(S, O2), T>
+    /// Map the [Sequential::Item](crate::Sequential::Item) of a [Sequential::into_next](crate::Sequential::into_next) type
+    fn map_item<F, O2>(self, f: F) -> Either<(S, O2), T>
     where
         F: FnOnce(O) -> O2;
 
@@ -77,7 +77,7 @@ impl<S, O, T> TransformNext<S, O, T> for Either<(S, O), T> {
         self.map_left(|(s, o)| (f(s), o))
     }
 
-    fn map_output<F, O2>(self, f: F) -> Either<(S, O2), T>
+    fn map_item<F, O2>(self, f: F) -> Either<(S, O2), T>
     where
         F: FnOnce(O) -> O2,
     {

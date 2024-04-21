@@ -1,7 +1,7 @@
 use crate::Sequential;
 use either::Either;
 
-/// A [Sequential] transformer that maps the [Sequential::Terminal] of its inner value.
+/// Map the [Terminal](Sequential::Terminal) of a [Sequential]
 pub struct MapTerminal<S, F, U>
 where
     S: Sequential,
@@ -26,10 +26,10 @@ where
     S: Sequential,
     F: Fn(S::Terminal) -> U,
 {
-    type Output = S::Output;
+    type Item = S::Item;
     type Terminal = U;
 
-    fn into_next(self) -> Either<(Self, Self::Output), Self::Terminal> {
+    fn into_next(self) -> Either<(Self, Self::Item), Self::Terminal> {
         use crate::TransformNext;
 
         let MapTerminal { seq, f } = self;

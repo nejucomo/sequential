@@ -1,26 +1,26 @@
-//! The [Sequential] trait and supporting types for abstract sequential emission of outputs with explicit termination
+//! The [Sequential] trait and supporting types for abstract sequential emission of items with explicit termination
 
-use crate::{AndThen, MapOutput, MapTerminal};
+use crate::{AndThen, MapItems, MapTerminal};
 use either::Either;
 
-/// A [Sequential] produces a sequence of `Output` values or a `Terminal`
+/// A [Sequential] produces a sequence of [Item](Sequential::Item) values or a [Terminal](Sequential::Terminal)
 ///
 /// Implementors only need to provide [Sequential::into_next].
 pub trait Sequential: Sized {
-    /// Each non-terminal step of a sequence produces this value
-    type Output;
-    /// This value is produced when a sequence terminates
+    /// Each non-terminal step of a sequence produces an `Item`
+    type Item;
+    /// A `Terminal` is produced when a sequence terminates
     type Terminal;
 
-    /// Consume the [Sequential] to produce either a continuation (type `Self`) with an `Output` or else a `Termination` value.
+    /// Consume the [Sequential] to produce either a continuation (type `Self`) with an [Item](Sequential::Item) or else a [Terminal](Sequential::Terminal)
     ///
-    /// This uses move semantics (consuming the [Sequential] and potentially producing a new one) to ensure in the case of termination, no inconsistent emitter state remains.
-    fn into_next(self) -> Either<(Self, Self::Output), Self::Terminal>;
+    /// This uses move semantics (consuming the [Sequential] and potentially producing a new one) to ensure in the case of termination, no inconsistent state remains. This also ensures consuming code cannot "iterate past the end" of a sequence.
+    fn into_next(self) -> Either<(Self, Self::Item), Self::Terminal>;
 
     /// After completing `self`, continue with `downstream`, collecting the two terminals into a pair
     fn and_then<D>(self, downstream: D) -> AndThen<Self, D>
     where
-        D: Sequential<Output = Self::Output>,
+        D: Sequential<Item = Self::Item>,
     {
         AndThen::new(self, downstream)
     }
@@ -28,7 +28,7 @@ pub trait Sequential: Sized {
     /// Process each item with `f`, then return [Self::Terminal]
     fn for_each<F>(self, mut f: F) -> Self::Terminal
     where
-        F: FnMut(Self::Output),
+        F: FnMut(Self::Item),
     {
         use either::Either::*;
 
@@ -66,7 +66,7 @@ pub trait Sequential: Sized {
     /// ```
     fn for_each_or_break<F>(self, mut f: F) -> Either<Self, Self::Terminal>
     where
-        F: FnMut(Self::Output) -> bool,
+        F: FnMut(Self::Item) -> bool,
     {
         use either::Either::*;
 
@@ -91,12 +91,12 @@ pub trait Sequential: Sized {
         self.for_each(std::mem::drop)
     }
 
-    /// Map each [Self::Output] another type
-    fn map_output<F, P>(self, f: F) -> MapOutput<Self, F, P>
+    /// Map each [Self::Item] another type
+    fn map_items<F, P>(self, f: F) -> MapItems<Self, F, P>
     where
-        F: Fn(Self::Output) -> P,
+        F: Fn(Self::Item) -> P,
     {
-        MapOutput::new(self, f)
+        MapItems::new(self, f)
     }
 
     /// Map the [Self::Terminal] another type
@@ -112,10 +112,10 @@ impl<I> Sequential for I
 where
     I: Iterator,
 {
-    type Output = <I as Iterator>::Item;
+    type Item = <I as Iterator>::Item;
     type Terminal = ();
 
-    fn into_next(mut self) -> Either<(Self, Self::Output), Self::Terminal> {
+    fn into_next(mut self) -> Either<(Self, Self::Item), Self::Terminal> {
         use Either::*;
 
         self.next().map(|x| Left((self, x))).unwrap_or(Right(()))

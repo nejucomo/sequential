@@ -1,13 +1,14 @@
-#![deny(unsafe_code, unused, missing_docs)]
+#![deny(unused, missing_docs)]
+#![forbid(unsafe_code)]
 //! A [Sequential] trait for generating a sequence of values with an explicit termination value
 //!
 //! The fundamental method is [Sequential::into_next]:
 //!
 //! ```rust,ignore
-//! fn into_next(self) -> Either<(Self, Self::Output), Self::Terminal>;
+//! fn into_next(self) -> Either<(Self, Self::Item), Self::Terminal>;
 //! ```
 //!
-//! This either produces a means of contuing (via `Self`) and an [Output](Sequential::Output), or else a [Terminal](Sequential::Terminal) value. Because this method consumes `self`, it ensures the [Sequential] state is dropped upon termination.
+//! This either produces a means of contuing (via `Self`) and an [Item](Sequential::Item), or else a [Terminal](Sequential::Terminal) value. Because this method consumes `self`, it ensures the [Sequential] state is dropped upon termination.
 //!
 //! # Example
 //!
@@ -68,7 +69,7 @@
 //!
 //! fn sum_elements<S>(seq: S) -> u64
 //! where
-//!     S: Sequential<Output = u64>
+//!     S: Sequential<Item = u64>
 //! {
 //!     let mut acc = 0;
 //!     seq.for_each(|inc| acc += inc);
@@ -82,7 +83,7 @@
 mod andthen;
 mod fnmut;
 mod intosequential;
-mod mapoutput;
+mod mapitems;
 mod mapterminal;
 mod sequential;
 mod termonerror;
@@ -91,7 +92,7 @@ mod transformnext;
 pub use self::andthen::AndThen;
 pub use self::fnmut::{from_fn_mut, SequentialFnMut};
 pub use self::intosequential::IntoSequential;
-pub use self::mapoutput::MapOutput;
+pub use self::mapitems::MapItems;
 pub use self::mapterminal::MapTerminal;
 pub use self::sequential::Sequential;
 pub use self::termonerror::{terminate_on_error, TerminateOnError};
