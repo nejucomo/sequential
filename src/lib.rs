@@ -87,7 +87,6 @@ mod intosequential;
 mod mapitems;
 mod mapterminal;
 mod sequential;
-mod termonerror;
 mod termonresi;
 mod transformnext;
 
@@ -97,7 +96,6 @@ pub use self::intosequential::IntoSequential;
 pub use self::mapitems::MapItems;
 pub use self::mapterminal::MapTerminal;
 pub use self::sequential::Sequential;
-pub use self::termonerror::{terminate_on_error, TerminateOnError};
 pub use self::termonresi::TerminateOnResidual;
 pub use self::transformnext::TransformNext;
 
