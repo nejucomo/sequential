@@ -1,5 +1,6 @@
 #![deny(unused, missing_docs)]
 #![forbid(unsafe_code)]
+#![feature(try_trait_v2)]
 //! A [Sequential] trait for generating a sequence of values with an explicit termination value
 //!
 //! The fundamental method is [Sequential::into_next]:
@@ -22,7 +23,7 @@
 //! {
 //!     let mut lines = 0;
 //!     let mut chars = 0;
-//!     let seq = sequential::terminate_on_error(BufReader::new(r).lines());
+//!     let seq = BufReader::new(r).lines().terminate_on_residual();
 //!     seq.for_each(|line| {
 //!         lines += 1;
 //!         chars += line.chars().count();
@@ -87,6 +88,7 @@ mod mapitems;
 mod mapterminal;
 mod sequential;
 mod termonerror;
+mod termonresi;
 mod transformnext;
 
 pub use self::andthen::AndThen;
@@ -96,6 +98,7 @@ pub use self::mapitems::MapItems;
 pub use self::mapterminal::MapTerminal;
 pub use self::sequential::Sequential;
 pub use self::termonerror::{terminate_on_error, TerminateOnError};
+pub use self::termonresi::TerminateOnResidual;
 pub use self::transformnext::TransformNext;
 
 #[cfg(test)]

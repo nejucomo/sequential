@@ -1,6 +1,8 @@
 //! The [Sequential] trait and supporting types for abstract sequential emission of items with explicit termination
 
-use crate::{AndThen, MapItems, MapTerminal};
+use std::ops::Try;
+
+use crate::{AndThen, MapItems, MapTerminal, TerminateOnResidual};
 use either::Either;
 
 /// A [Sequential] produces a sequence of [Item](Sequential::Item) values or a [Terminal](Sequential::Terminal)
@@ -105,6 +107,20 @@ pub trait Sequential: Sized {
         F: Fn(Self::Terminal) -> P,
     {
         MapTerminal::new(self, f)
+    }
+
+    /// Transform to a [Sequential] which terminates on the first [Try::Residual] (such as [Err]); if no inner item is a residual, terminate with the original [Self::Terminal] as [Try::Output]
+    ///
+    /// # Example
+    ///
+    fn terminate_on_residual<T>(
+        self,
+    ) -> TerminateOnResidual<Self, T, <Self::Item as Try>::Output, <Self::Item as Try>::Residual>
+    where
+        Self::Item: Try,
+        T: Try<Output = Self::Terminal, Residual = <Self::Item as Try>::Residual>,
+    {
+        TerminateOnResidual::from(self)
     }
 }
 
