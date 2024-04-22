@@ -1,3 +1,5 @@
+use std::{convert::Infallible, ops::ControlFlow};
+
 use either::Either::{self, Left, Right};
 
 #[cfg(doc)]
@@ -67,6 +69,28 @@ impl<S, I, T> Update<S, I, T> {
                 Right(t) => Terminate(t),
             },
             Terminate(t) => Terminate(t),
+        }
+    }
+}
+
+impl<S, I, T, E> Update<S, Result<I, E>, T> {
+    /// Convert items from [Result] to the `Ok` values on [Next], otherwise terminating with any [Err] value
+    ///
+    /// Most code typically uses [Sequential::terminate_on_err] rather than this method.
+    pub fn terminate_on_err(self) -> Update<S, I, Result<T, E>> {
+        use std::ops::Try;
+
+        self.map_item(|r| r.branch()).terminate_on_break()
+    }
+}
+
+impl<S, I, T, E> Update<S, ControlFlow<Result<Infallible, E>, I>, T> {
+    pub(crate) fn terminate_on_break(self) -> Update<S, I, Result<T, E>> {
+        match self {
+            Next(s, ControlFlow::Continue(i)) => Next(s, i),
+            Next(_, ControlFlow::Break(Err(e))) => Terminate(Err(e)),
+            Next(_, ControlFlow::Break(Ok(_))) => unreachable!("infallible Result residual Ok"),
+            Terminate(t) => Terminate(Ok(t)),
         }
     }
 }

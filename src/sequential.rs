@@ -1,6 +1,9 @@
 //! The [Sequential] trait and supporting types for abstract sequential emission of items with explicit termination
 
-use std::ops::{ControlFlow, Try};
+use std::{
+    convert::Infallible,
+    ops::{ControlFlow, Try},
+};
 
 use crate::{
     combinators::{AndThen, MapItems, MapTerminal, TerminateOnErr},
@@ -110,9 +113,9 @@ pub trait Sequential: Sized {
     /// ```
     ///
     /// As a work-around we have the given bound on [Try] with [Result] residuals. This works as intended for `Result<X, E>`, yet it also works for other [Try impls](https://doc.rust-lang.org/std/ops/trait.Try.html#implementors).
-    fn terminate_on_err<X, E>(self) -> TerminateOnErr<Self, X, E>
+    fn terminate_on_err<E>(self) -> TerminateOnErr<Self, E>
     where
-        Self::Item: Try<Residual = Result<X, E>>,
+        Self::Item: Try<Residual = Result<Infallible, E>>,
     {
         TerminateOnErr::from(self)
     }
