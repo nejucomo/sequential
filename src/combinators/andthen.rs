@@ -16,7 +16,7 @@ impl<U, D> AndThen<U, D>
 where
     U: Sequential,
 {
-    pub(super) fn new(upstream: U, downstream: D) -> Self {
+    pub(crate) fn new(upstream: U, downstream: D) -> Self {
         AndThen {
             upstate: Left(upstream),
             down: downstream,
