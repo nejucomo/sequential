@@ -1,5 +1,4 @@
-use crate::Sequential;
-use either::Either;
+use crate::{Sequential, Update};
 
 /// Map each [Item](Sequential::Item) of a [Sequential]
 pub struct MapItems<S, F, P>
@@ -29,9 +28,7 @@ where
     type Item = P;
     type Terminal = S::Terminal;
 
-    fn into_next(self) -> Either<(Self, Self::Item), Self::Terminal> {
-        use crate::TransformNext;
-
+    fn into_next(self) -> Update<Self, Self::Item, Self::Terminal> {
         let MapItems { seq, f } = self;
         seq.into_next()
             .map_item(&f)

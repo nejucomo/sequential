@@ -1,8 +1,14 @@
 //! The [Sequential] trait and supporting types for abstract sequential emission of items with explicit termination
 
-use std::ops::{ControlFlow, Try};
+use std::{
+    convert::Infallible,
+    ops::{ControlFlow, Try},
+};
 
-use crate::{AndThen, MapItems, MapTerminal, TerminateOnErr};
+use crate::{
+    combinators::{AndThen, MapItems, MapTerminal, TerminateOnErr},
+    Update::{self, Next, Terminate},
+};
 use either::Either;
 
 /// A [Sequential] produces a sequence of [Item](Sequential::Item) values or a [Terminal](Sequential::Terminal)
@@ -17,7 +23,7 @@ pub trait Sequential: Sized {
     /// Consume the [Sequential] to produce either a continuation (type `Self`) with an [Item](Sequential::Item) or else a [Terminal](Sequential::Terminal)
     ///
     /// This uses move semantics (consuming the [Sequential] and potentially producing a new one) to ensure in the case of termination, no inconsistent state remains. This also ensures consuming code cannot "iterate past the end" of a sequence.
-    fn into_next(self) -> Either<(Self, Self::Item), Self::Terminal>;
+    fn into_next(self) -> Update<Self, Self::Item, Self::Terminal>;
 
     /// After completing `self`, continue with `downstream`, collecting the two terminals into a pair
     fn and_then<D>(self, downstream: D) -> AndThen<Self, D>
@@ -53,13 +59,13 @@ pub trait Sequential: Sized {
         let mut seq = self;
         loop {
             match seq.into_next() {
-                Left((next, item)) => match f(item) {
+                Next(next, item) => match f(item) {
                     Continue(()) => seq = next,
                     Break(()) => {
                         return Left(next);
                     }
                 },
-                Right(term) => {
+                Terminate(term) => {
                     return Right(term);
                 }
             }
@@ -107,9 +113,9 @@ pub trait Sequential: Sized {
     /// ```
     ///
     /// As a work-around we have the given bound on [Try] with [Result] residuals. This works as intended for `Result<X, E>`, yet it also works for other [Try impls](https://doc.rust-lang.org/std/ops/trait.Try.html#implementors).
-    fn terminate_on_err<X, E>(self) -> TerminateOnErr<Self, X, E>
+    fn terminate_on_err<E>(self) -> TerminateOnErr<Self, E>
     where
-        Self::Item: Try<Residual = Result<X, E>>,
+        Self::Item: Try<Residual = Result<Infallible, E>>,
     {
         TerminateOnErr::from(self)
     }
@@ -122,9 +128,7 @@ where
     type Item = <I as Iterator>::Item;
     type Terminal = ();
 
-    fn into_next(mut self) -> Either<(Self, Self::Item), Self::Terminal> {
-        use Either::*;
-
-        self.next().map(|x| Left((self, x))).unwrap_or(Right(()))
+    fn into_next(mut self) -> Update<Self, Self::Item, Self::Terminal> {
+        self.next().map(|x| Next(self, x)).unwrap_or(Terminate(()))
     }
 }

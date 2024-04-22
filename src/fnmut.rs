@@ -1,4 +1,5 @@
 use crate::Sequential;
+use crate::Update::{self, Next, Terminate};
 use either::Either;
 
 /// Wraps a [FnMut] which returns [Sequential] items or a terminal
@@ -19,7 +20,10 @@ where
     type Item = O;
     type Terminal = T;
 
-    fn into_next(mut self) -> Either<(Self, O), T> {
-        self.0().map_left(|item| (self, item))
+    fn into_next(mut self) -> Update<Self, Self::Item, Self::Terminal> {
+        self.0()
+            .map_left(|item| Next(self, item))
+            .map_right(Terminate)
+            .into_inner()
     }
 }

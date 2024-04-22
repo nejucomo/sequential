@@ -1,12 +1,6 @@
 A [Sequential] trait abstraction for generating/consuming sequences of values with an explicit termination value
 
-The fundamental method is [Sequential::into_next]:
-
-```rust,ignore
-fn into_next(self) -> Either<(Self, Self::Item), Self::Terminal>;
-```
-
-This either produces a means of contuing (via `Self`) and an [Item](Sequential::Item), or else a [Terminal](Sequential::Terminal) value. Because this method consumes `self`, it ensures the [Sequential] state is dropped upon termination.
+The fundamental method is [Sequential::into_next] which consumes the [Sequential] to either produce an [Update::Next] with both an item and a `Self` state for continuing, or else an [Update::Terminate] with the [Sequential::Terminal] value. Because [Sequential::into_next] consumes the state, if it terminates, there is no further state available to the caller (and any such state is necessarily dropped).
 
 # Example
 
