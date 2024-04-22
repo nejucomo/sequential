@@ -1,6 +1,8 @@
 //! The [Sequential] trait and supporting types for abstract sequential emission of items with explicit termination
 
-use crate::{AndThen, MapItems, MapTerminal};
+use std::ops::{ControlFlow, Try};
+
+use crate::{AndThen, MapItems, MapTerminal, TerminateOnErr};
 use either::Either;
 
 /// A [Sequential] produces a sequence of [Item](Sequential::Item) values or a [Terminal](Sequential::Terminal)
@@ -30,55 +32,33 @@ pub trait Sequential: Sized {
     where
         F: FnMut(Self::Item),
     {
-        use either::Either::*;
-
-        let mut seq = self;
-        loop {
-            match seq.into_next() {
-                Left((next, item)) => {
-                    f(item);
-                    seq = next;
-                }
-                Right(term) => {
-                    return term;
-                }
-            }
-        }
+        self.for_each_ctl(|item| {
+            f(item);
+            ControlFlow::Continue(())
+        })
+        .right()
+        .unwrap()
     }
 
-    /// Process items with `f` as long as it returns [true]
+    /// Process items with `f` until the sequence terminates or `f` returns [Break](ControlFlow::Break)
     ///
-    /// Either the remainder of the pending sequence, [Self], is returned, or else if it completed, [Self::Terminal].
-    ///
-    /// # Example: Terminate on Break
-    ///
-    /// If a caller wishes to process some initial items, drop the rest, and collect the terminal, this is a concise approach:
-    ///
-    /// ```
-    /// # use sequential::Sequential;
-    /// # fn process_item<T>(_: T) -> bool { true }
-    /// fn process_sequential<S>(seq: S) -> <S as Sequential>::Terminal
-    /// where
-    ///     S: Sequential,
-    /// {
-    ///      seq.for_each_or_break(process_item).map_left(Sequential::terminate).into_inner()
-    /// }
-    /// ```
-    fn for_each_or_break<F>(self, mut f: F) -> Either<Self, Self::Terminal>
+    /// If processing breaks, return the remaining sequential, otherwise the [Terminal](Self::Terminal)
+    fn for_each_ctl<F>(self, mut f: F) -> Either<Self, Self::Terminal>
     where
-        F: FnMut(Self::Item) -> bool,
+        F: FnMut(Self::Item) -> ControlFlow<()>,
     {
         use either::Either::*;
+        use ControlFlow::{Break, Continue};
 
         let mut seq = self;
         loop {
             match seq.into_next() {
-                Left((next, item)) => {
-                    if !f(item) {
+                Left((next, item)) => match f(item) {
+                    Continue(()) => seq = next,
+                    Break(()) => {
                         return Left(next);
                     }
-                    seq = next;
-                }
+                },
                 Right(term) => {
                     return Right(term);
                 }
@@ -105,6 +85,33 @@ pub trait Sequential: Sized {
         F: Fn(Self::Terminal) -> P,
     {
         MapTerminal::new(self, f)
+    }
+
+    /// Transform from a [Sequential] with [Result] items to one which terminates on the first [Err] encountered, if any, otherwise it terminates with the original [Terminal](Self::Terminal)
+    ///
+    /// More concisely, transfrom from:
+    ///
+    /// `Sequential<Item = Result<X, E>, Terminal = T>` into `Sequential<Item = X, Terminal = Result<T, E>>`
+    ///
+    /// # Note on `Self::Item`
+    ///
+    /// If [type equality constraints](https://github.com/rust-lang/rust/issues/20041) were available a clearer definition of this method would be:
+    ///
+    /// ```ignore
+    /// fn terminate_on_err<X, E>(self) -> TerminateOnErr<Self, X, E>
+    /// where
+    ///     Self::Item = Result<X, E>,
+    /// {
+    ///     ...
+    /// }
+    /// ```
+    ///
+    /// As a work-around we have the given bound on [Try] with [Result] residuals. This works as intended for `Result<X, E>`, yet it also works for other [Try impls](https://doc.rust-lang.org/std/ops/trait.Try.html#implementors).
+    fn terminate_on_err<X, E>(self) -> TerminateOnErr<Self, X, E>
+    where
+        Self::Item: Try<Residual = Result<X, E>>,
+    {
+        TerminateOnErr::from(self)
     }
 }
 

@@ -1,4 +1,4 @@
-use either::Either;
+use either::Either::{self, Left, Right};
 
 /// A helper trait for transforming the return values of [Sequential::into_next](crate::Sequential::into_next)
 ///
@@ -67,6 +67,11 @@ pub trait TransformNext<S, O, T> {
     fn map_terminal<F, T2>(self, f: F) -> Either<(S, O), T2>
     where
         F: FnOnce(T) -> T2;
+
+    /// Transform the item into a new item or a terminal
+    fn and_then<F, O2>(self, f: F) -> Either<(S, O2), T>
+    where
+        F: FnOnce(O) -> Either<O2, T>;
 }
 
 impl<S, O, T> TransformNext<S, O, T> for Either<(S, O), T> {
@@ -89,5 +94,16 @@ impl<S, O, T> TransformNext<S, O, T> for Either<(S, O), T> {
         F: FnOnce(T) -> T2,
     {
         self.map_right(f)
+    }
+
+    fn and_then<F, O2>(self, f: F) -> Either<(S, O2), T>
+    where
+        F: FnOnce(O) -> Either<O2, T>,
+    {
+        self.left_and_then(|(s, x)| {
+            f(x).map_left(|newx| Left((s, newx)))
+                .map_right(Right)
+                .into_inner()
+        })
     }
 }
