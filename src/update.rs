@@ -5,7 +5,7 @@ use either::Either::{self, Left, Right};
 #[cfg(doc)]
 use crate::Sequential;
 
-/// [Sequential::into_next] produces this update
+/// A sequence update produced by [Sequential::into_next]
 #[derive(Debug)]
 pub enum Update<S, I, T> {
     /// The sequence produced an item, `I`, and [Sequential] continuation state, `S`
@@ -25,7 +25,7 @@ impl<S, I, T> Update<S, I, T> {
         }
     }
 
-    /// Map the state of a [Sequential::into_next](crate::Sequential::into_next) type
+    /// Map the state type
     pub fn map_state<F, S2>(self, f: F) -> Update<S2, I, T>
     where
         F: FnOnce(S) -> S2,
@@ -36,7 +36,7 @@ impl<S, I, T> Update<S, I, T> {
         }
     }
 
-    /// Map the [Sequential::Item](crate::Sequential::Item) of a [Sequential::into_next](crate::Sequential::into_next) type
+    /// Map the item type
     pub fn map_item<F, I2>(self, f: F) -> Update<S, I2, T>
     where
         F: FnOnce(I) -> I2,
@@ -47,7 +47,7 @@ impl<S, I, T> Update<S, I, T> {
         }
     }
 
-    /// Map the [Sequential::Terminal](crate::Sequential::Terminal) of a [Sequential::into_next](crate::Sequential::into_next) type
+    /// Map the terminal type
     pub fn map_terminal<F, T2>(self, f: F) -> Update<S, I, T2>
     where
         F: FnOnce(T) -> T2,
@@ -55,20 +55,6 @@ impl<S, I, T> Update<S, I, T> {
         match self {
             Next(s, i) => Next(s, i),
             Terminate(t) => Terminate(f(t)),
-        }
-    }
-
-    /// Transform the item into a new item or a terminal
-    pub fn and_then<F, I2>(self, f: F) -> Update<S, I2, T>
-    where
-        F: FnOnce(I) -> Either<I2, T>,
-    {
-        match self {
-            Next(s, i) => match f(i) {
-                Left(i2) => Next(s, i2),
-                Right(t) => Terminate(t),
-            },
-            Terminate(t) => Terminate(t),
         }
     }
 }
