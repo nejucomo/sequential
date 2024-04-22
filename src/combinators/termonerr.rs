@@ -1,8 +1,8 @@
 use std::{marker::PhantomData, ops::Try};
 
-use either::Either::{self, Left, Right};
+use either::Either::{Left, Right};
 
-use crate::{Sequential, TransformNext};
+use crate::{Sequential, Update};
 
 /// A [Sequential] which terminates with the first item residual encountered
 #[derive(Copy, Clone, Debug)]
@@ -28,7 +28,7 @@ where
     type Item = <S::Item as Try>::Output;
     type Terminal = Result<S::Terminal, E>;
 
-    fn into_next(self) -> Either<(Self, Self::Item), Self::Terminal> {
+    fn into_next(self) -> Update<Self, Self::Item, Self::Terminal> {
         self.seq
             .into_next()
             .map_state(TerminateOnErr::from)

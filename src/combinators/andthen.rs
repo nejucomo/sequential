@@ -1,4 +1,5 @@
 use crate::Sequential;
+use crate::Update::{self, Next, Terminate};
 use either::Either::{self, *};
 
 /// Compose a pair of [Sequential] values in sequence, producing all of `U`'s items and then all of `D`'s
@@ -17,10 +18,11 @@ where
     U: Sequential,
 {
     pub(crate) fn new(upstream: U, downstream: D) -> Self {
-        AndThen {
-            upstate: Left(upstream),
-            down: downstream,
-        }
+        AndThen::new_inner(Left(upstream), downstream)
+    }
+
+    fn new_inner(upstate: Either<U, <U as Sequential>::Terminal>, down: D) -> Self {
+        AndThen { upstate, down }
     }
 }
 
@@ -32,32 +34,32 @@ where
     type Item = O;
     type Terminal = (<U as Sequential>::Terminal, <D as Sequential>::Terminal);
 
-    fn into_next(self) -> Either<(Self, Self::Item), Self::Terminal> {
+    fn into_next(self) -> Update<Self, Self::Item, Self::Terminal> {
         let AndThen { upstate, down } = self;
         match upstate {
             Left(up) => match up.into_next() {
-                Left((up_new, item)) => Left((
+                Next(up_new, item) => Next(
                     AndThen {
                         upstate: Left(up_new),
                         down,
                     },
                     item,
-                )),
-                Right(up_term) => AndThen {
+                ),
+                Terminate(up_term) => AndThen {
                     upstate: Right(up_term),
                     down,
                 }
                 .into_next(),
             },
             Right(up_term) => match down.into_next() {
-                Left((down_new, item)) => Left((
+                Next(down_next, item) => Next(
                     AndThen {
                         upstate: Right(up_term),
-                        down: down_new,
+                        down: down_next,
                     },
                     item,
-                )),
-                Right(down_term) => Right((up_term, down_term)),
+                ),
+                Terminate(down_term) => Terminate((up_term, down_term)),
             },
         }
     }

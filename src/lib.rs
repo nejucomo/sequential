@@ -7,12 +7,12 @@ pub mod combinators;
 mod fnmut;
 mod intosequential;
 mod sequential;
-mod transformnext;
+mod update;
 
 pub use self::fnmut::{from_fn_mut, SequentialFnMut};
 pub use self::intosequential::IntoSequential;
 pub use self::sequential::Sequential;
-pub use self::transformnext::TransformNext;
+pub use self::update::Update;
 
 #[cfg(test)]
 mod tests;
