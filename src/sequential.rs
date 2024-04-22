@@ -2,7 +2,7 @@
 
 use std::ops::{ControlFlow, Try};
 
-use crate::{AndThen, MapItems, MapTerminal, TerminateOnErr};
+use crate::combinators::{AndThen, MapItems, MapTerminal, TerminateOnErr};
 use either::Either;
 
 /// A [Sequential] produces a sequence of [Item](Sequential::Item) values or a [Terminal](Sequential::Terminal)
